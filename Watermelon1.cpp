@@ -1,149 +1,98 @@
 #include <bits/stdc++.h>
 using namespace std;
+using ll = long long;
+ll M = 1e9 + 7;
 
 void FIO()
 {
-	ios_base::sync_with_stdio(false);
-	cin.tie(NULL);
-	cout.tie(NULL);
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    cout.tie(NULL);
 }
 
-using ll = long long;
-#define M 1000000007
+vector<vector<ll>> sparmx, sparmn;
 
-bool prime(int n)
+ll mn(ll l, ll r)
 {
-	bool x = 1;
-	for (int i = 2; i < n; i++)
-	{
-		if (n % i == 0)
-		{
-			x = 0;
-			break;
-		}
-	}
-	return x;
+    ll pw = log2(r - l + 1);
+    return min(sparmn[pw][l], sparmn[pw][r - (1 << pw) + 1]);
 }
-
-void testcases(set<int> &primes)
+ll mx(ll l, ll r)
 {
-	int n, q;
-	cin >> n >> q;
-	vector<int> v(n);
-	// vector<pair<int, int>> primecnt;
-
-	for (int i = 0; i < v.size(); i++)
-		cin >> v[i];
-
-	vector<pair<int, int>> pref(v.size());
-	pref[0].first = 0;
-	pref[0].second = (primes.count(v[0]));
-	for (int i = 1; i < v.size(); i++)
-	{
-		if (primes.count(v[i]))
-		{
-			pref[i].second = pref[i - 1].second + 1;
-			pref[i].first = i;
-		}
-		else
-		{
-			pref[i].second = pref[i - 1].second;
-			pref[i].first = i;
-		}
-	}
-
-	// pref{index of prime,prefix}
-
-	while (q--)
-	{
-		int l, r;
-		cin >> l >> r;
-		l--, r--;
-		int x = 0, y = pref[r].second;
-		if (l - 1 >= 0)
-			x = pref[l - 1].second;
-		auto h = primes.upper_bound(y - x);
-		if (y - x > 0)
-			if (h == primes.begin())
-				cout << -1 << '\n';
-			else
-			{
-				h--;
-				cout << *h << '\n';
-			}
-		else
-			cout << -1 << '\n';
-
-		// if (((pref[r].second - ((l - 1 > 0) ? pref[l - 1].second : 0)) > 0)
-		// 	cout << pref[r].second - ((l - 1 > 0) ? pref[l - 1].second : 0);
-		// else
-		// 	cout << -1 << '\n';
-	}
-	/*
-	1
-	4 1
-	2 3 7 5
-	1 4
-	*/
-	// l = 2,r = 7 -> ans = 4
-
-	// for (int i = 0; i < pref.size(); i++)
-	// 	cout << pref[i].second << ' ';
-	// cout << '\n';
-	// for (int i = 0; i < pref.size(); i++)
-	// 	cout << pref[i].first << ' ';
-	// cout << '\n';
-
-	// pref[0].first = 0;
-	// pref[0].second = primecnt[0].second;
-	// for (int i = 1; i < v.size(); i++)
-	// {
-	// 	pref[i].second = pref[i - 1].second + primecnt[i].second;
-	// 	pref[i].first = primecnt[i].first;
-	// 	while (primecnt[i + 1].first != primecnt[i].first + 1)
-	// 	{
-	// 		pref[i].second = pref[i - 1].second;
-	// 		pref[i].first = i;
-	// 		i++;
-	// 	}
-	// }
-
-	// while (q--)
-	// {
-	// 	int l, r;
-	// 	cin >> l >> r;
-	// 	// r = (lower_bound(v.begin(), v.end(), r) != v.begin() - 1) ? *lower_bound(v.begin(), v.end(), r) : *(v.begin());
-	// 	// l = (lower_bound(v.begin(), v.end(), l) != v.begin() - 1) ? *lower_bound(v.begin(), v.end(), l) : *(v.begin());
-	// 	// cout << ((pref[r] - ((l - 1 > 0) ? pref[l - 1] : 0)) > 0) ? pref[r] - ((l - 1 > 0) ? pref[l - 1] : 0) : -1 << '\n';
-	// 	if ((pref[pref[r].first].second - ((l - 1 > 0) ? pref[pref[l - 1].first].second : 0)) > 0)
-	// 		cout << pref[pref[r].first].second - ((l - 1 > 0) ? pref[pref[l - 1].first].second : 0) << '\n';
-	// 	else
-	// 		cout << -1 << '\n';
-	// }
-
-	/*
-	2
-1
-4 1
-2 3 7 5
-1 4
-	4 2
-	5 2 1 3
-	*/
+    ll pw = log2(r - l + 1);
+    return max(sparmx[pw][l], sparmx[pw][r - (1 << pw) + 1]);
 }
+
+void testcases()
+{
+    ll n;
+    cin >> n;
+    ll lg = log2(n) + 1;
+    sparmx.resize(lg, vector<ll>(n));
+    sparmn.resize(lg, vector<ll>(n));
+    for (ll i = 0; i < n; i++)
+        cin >> sparmx[0][i];
+    for (ll pw = 1; pw < lg; pw++)
+        for (ll i = 0; i + (1 << pw) <= n; i++)
+            sparmx[pw][i] = max(sparmx[pw - 1][i], sparmx[pw - 1][i + (1 << (pw - 1))]);
+
+    for (ll i = 0; i < n; i++)
+        cin >> sparmn[0][i];
+    for (ll pw = 1; pw < lg; pw++)
+        for (ll i = 0; i + (1 << pw) <= n; i++)
+            sparmn[pw][i] = min(sparmn[pw - 1][i], sparmn[pw - 1][i + (1 << (pw - 1))]);
+// DONE creating the sparse tabels
+    ll ans = 0;
+    for (ll l = 0; l < n; l++) // for each possible number
+    {
+        ll start = l, end = n - 1, left = -1;
+        while (start <= end) // binary search for the first left bound that has min = max
+        {
+            ll mid = (start + end) / 2;
+            ll a = mx(l, mid); // Getting the answer from the sparse
+            ll b = mn(l, mid); // Getting the answer from the sparse
+            if (a == b)
+            {
+                end = mid - 1;
+                left = mid;
+            }
+            else if (a > b)
+                end = mid - 1;
+            else if (b > a)
+                start = mid + 1;
+        }
+        if (!(left + 1))
+            continue;
+        ll right = -1;
+        start = left, end = n - 1;
+
+        while (start <= end) // binary search for the right bound where the streak of min = max ends
+        {
+            ll mid = (start + end) / 2;
+            ll a = mx(l, mid);
+            ll b = mn(l, mid);
+            if (a == b)
+            {
+                start = mid + 1;
+                right = mid;
+            }
+            else if (a > b)
+                end = mid - 1;
+            else
+                start = mid + 1;
+        }
+        if (left + 1 and right + 1)
+            ans += right - left + 1; // add length if found right and left boundries
+    }
+    cout << ans << '\n';
+}
+
 int main()
 {
-	FIO();
-	int tests = 1;
-	cin >> tests;
-	set<int> primes;
-	for (int i = 2; i <= 1e5; i++)
-		if (prime(i))
-			primes.insert(i);
-
-	while (tests--)
-		testcases(primes);
-	return 0;
+    FIO();
+    ll tests = 1;
+    cin >> tests;
+    while (tests--)
+        testcases();
+    return 0;
 }
-// it's already O(t*q) -> 1e10 -> not by choice
-// will it work? Let's see :)
