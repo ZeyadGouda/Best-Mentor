@@ -86,6 +86,7 @@ void testcases()
     }
     cout << ans << '\n';
 }
+// RUNTIME ERROR DUE TO INDEXING -> I've no clue which one is it or why
 
 int main()
 {
@@ -96,3 +97,4 @@ int main()
         testcases();
     return 0;
 }
+
